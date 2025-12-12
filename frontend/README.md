@@ -1,73 +1,99 @@
-# Welcome to your Lovable project
+# Lumberjack Legends Frontend
 
-## Project info
+Welcome to the frontend application for Lumberjack Legends! This project is built with Vite, TypeScript, React, shadcn-ui, and Tailwind CSS.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## Project Setup
 
-## How can I edit this code?
+### Prerequisites
 
-There are several ways of editing your application.
+*   Node.js (LTS version recommended)
+*   npm (comes with Node.js) or Bun
 
-**Use Lovable**
+### Installation
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+Navigate to the `frontend` directory and install dependencies:
 
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+```bash
+cd /workspaces/lumberjack-legends/frontend
+npm install
+# or if you use Bun
+# bun install
 ```
 
-**Edit a file directly in GitHub**
+## Running the Application
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+To start the development server:
 
-**Use GitHub Codespaces**
+```bash
+cd /workspaces/lumberjack-legends/frontend
+npm run dev
+# or if you use Bun
+# bun dev
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+This will usually open the application in your browser at `http://localhost:8080`.
+
+## Running Tests
+
+This project uses [Vitest](https://vitest.dev/) for testing.
+
+### Test Scripts
+
+The `package.json` includes the following test scripts for convenience:
+
+*   `npm run test`: Runs tests in watch mode (interactive).
+*   `npm run test:run`: Runs all tests once and exits.
+
+### How to Run Tests
+
+1.  **Ensure Dependencies are Installed**:
+    ```bash
+    cd /workspaces/lumberjack-legends/frontend
+    npm install # or bun install
+    ```
+
+2.  **Run All Tests (once)**:
+    ```bash
+    cd /workspaces/lumberjack-legends/frontend
+    npm run test:run
+    # or using npx/bun directly if script not added:
+    # npx vitest --run
+    # bun vitest --run
+    ```
+
+3.  **Run Tests in Watch Mode (interactive)**:
+    ```bash
+    cd /workspaces/lumberjack-legends/frontend
+    npm run test
+    # or using npx/bun directly if script not added:
+    # npx vitest
+    # bun vitest
+    ```
+
+4.  **Run a Specific Test File**:
+    Replace `<path/to/your/test.ts>` with the actual path to the test file.
+    ```bash
+    cd /workspaces/lumberjack-legends/frontend
+    npm exec vitest -- src/services/mockApi.integration.test.ts --run
+    # Example for a specific component test:
+    # npm exec vitest -- src/components/game/GameHUD.test.tsx --run
+    ```
+
+### Test Environment
+
+Tests are configured to run in a `jsdom` environment, which simulates a browser DOM for React component testing.
+The `setupTests.ts` file is used for global test setup, e.g., extending `expect` with `@testing-library/jest-dom` matchers.
+
+---
 
 ## What technologies are used for this project?
 
-This project is built with:
+-   **Vite**: Fast frontend tooling, development server, and build tool.
+-   **TypeScript**: Statically typed superset of JavaScript.
+-   **React**: A JavaScript library for building user interfaces.
+-   **shadcn-ui**: A collection of re-usable components for React.
+-   **Tailwind CSS**: A utility-first CSS framework for rapidly building custom designs.
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## Additional Information
 
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+For more details on deploying this project or connecting a custom domain, refer to the original project documentation if available.
