@@ -20,21 +20,24 @@ const renderWithProviders = () => {
 
 describe('GameHUD', () => {
   it('should render score display', () => {
-    const { getByText } = renderWithProviders();
+    const { getByText, getByTestId } = renderWithProviders();
     
     expect(getByText('Score')).toBeInTheDocument();
-    expect(getByText('0')).toBeInTheDocument();
+    expect(getByTestId('hud-score')).toHaveTextContent('0');
   });
 
   it('should render time display', () => {
-    const { getByText } = renderWithProviders();
+    const { getByText, getByTestId } = renderWithProviders();
     
     expect(getByText('Time')).toBeInTheDocument();
+    // Ensure the time element is present and contains "s"
+    expect(getByTestId('hud-time').textContent).toContain('s');
   });
 
   it('should render chops display', () => {
-    const { getByText } = renderWithProviders();
+    const { getByText, getByTestId } = renderWithProviders();
     
     expect(getByText('Chops')).toBeInTheDocument();
+    expect(getByTestId('hud-chops')).toHaveTextContent('0');
   });
 });

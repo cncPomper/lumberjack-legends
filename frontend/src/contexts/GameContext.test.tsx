@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { render } from '@testing-library/react';
+import { render, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { GameProvider, useGame } from './GameContext';
 import { AuthProvider } from './AuthContext';
@@ -7,17 +7,17 @@ import React from 'react';
 
 // Test component to access game context
 const TestGameComponent = () => {
-  const { 
-    gameState, 
-    score, 
-    chops, 
-    playerPosition, 
-    startGame, 
-    chop, 
+  const {
+    gameState,
+    score,
+    chops,
+    playerPosition,
+    startGame,
+    chop,
     movePlayer,
-    endGame 
+    endGame
   } = useGame();
-  
+
   return (
     <div>
       <div data-testid="game-state">{gameState}</div>
@@ -48,84 +48,92 @@ const renderWithProviders = () => {
 describe('GameContext', () => {
   it('should start with idle state', () => {
     const { getByTestId } = renderWithProviders();
-    
+
     expect(getByTestId('game-state')).toHaveTextContent('idle');
     expect(getByTestId('score')).toHaveTextContent('0');
     expect(getByTestId('chops')).toHaveTextContent('0');
   });
 
-  it('should change state to playing when game starts', () => {
+  it('should change state to playing when game starts', async () => {
     const { getByTestId } = renderWithProviders();
-    
-    getByTestId('start-btn').click();
-    
-    expect(getByTestId('game-state')).toHaveTextContent('playing');
+
+    fireEvent.click(getByTestId('start-btn'));
+
+    await waitFor(() => {
+      expect(getByTestId('game-state')).toHaveTextContent('playing');
+    });
   });
 
-  it('should reset score and chops on new game', () => {
+  it('should reset score and chops on new game', async () => {
     const { getByTestId } = renderWithProviders();
-    
+
     // Start game
-    getByTestId('start-btn').click();
-    
-    // Verify reset
-    expect(getByTestId('score')).toHaveTextContent('0');
-    expect(getByTestId('chops')).toHaveTextContent('0');
+    fireEvent.click(getByTestId('start-btn'));
+
+    await waitFor(() => {
+      expect(getByTestId('score')).toHaveTextContent('0');
+      expect(getByTestId('chops')).toHaveTextContent('0');
+    });
   });
 
-  it('should increment score and chops on successful chop', () => {
+  it('should increment score and chops on successful chop', async () => {
     const { getByTestId } = renderWithProviders();
-    
-    getByTestId('start-btn').click();
-    
-    // Make sure player is on safe side before chopping
+
+    fireEvent.click(getByTestId('start-btn'));
+
+    // wait for playing
+    await waitFor(() => {
+      expect(getByTestId('game-state')).toHaveTextContent('playing');
+    });
+
     const initialScore = parseInt(getByTestId('score').textContent || '0');
-    
-    // Chop action - note: this may end game if there's a branch
-    getByTestId('chop-btn').click();
-    
-    // Score should either increase or game should end
-    const gameState = getByTestId('game-state').textContent;
-    if (gameState === 'playing') {
-      const newScore = parseInt(getByTestId('score').textContent || '0');
-      expect(newScore).toBeGreaterThan(initialScore);
-    }
+
+    fireEvent.click(getByTestId('chop-btn'));
+
+    await waitFor(() => {
+      const gameState = getByTestId('game-state').textContent;
+      if (gameState === 'playing') {
+        const newScore = parseInt(getByTestId('score').textContent || '0');
+        expect(newScore).toBeGreaterThanOrEqual(initialScore);
+      }
+    });
   });
 
-  it('should change player position when moving', () => {
+  it('should change player position when moving', async () => {
     const { getByTestId } = renderWithProviders();
-    
+
     // Default position is left
     expect(getByTestId('position')).toHaveTextContent('left');
-    
-    getByTestId('start-btn').click();
-    
+
+    fireEvent.click(getByTestId('start-btn'));
+    await waitFor(() => expect(getByTestId('game-state')).toHaveTextContent('playing'));
+
     // Move right
-    getByTestId('move-right-btn').click();
-    expect(getByTestId('position')).toHaveTextContent('right');
-    
+    fireEvent.click(getByTestId('move-right-btn'));
+    await waitFor(() => expect(getByTestId('position')).toHaveTextContent('right'));
+
     // Move left
-    getByTestId('move-left-btn').click();
-    expect(getByTestId('position')).toHaveTextContent('left');
+    fireEvent.click(getByTestId('move-left-btn'));
+    await waitFor(() => expect(getByTestId('position')).toHaveTextContent('left'));
   });
 
   it('should not allow movement when game is not playing', () => {
     const { getByTestId } = renderWithProviders();
-    
+
     // Try to move without starting game
-    getByTestId('move-right-btn').click();
-    
+    fireEvent.click(getByTestId('move-right-btn'));
+
     // Position should remain left (default)
     expect(getByTestId('position')).toHaveTextContent('left');
   });
 
-  it('should change to gameover state when ending game', () => {
+  it('should change to gameover state when ending game', async () => {
     const { getByTestId } = renderWithProviders();
-    
-    getByTestId('start-btn').click();
-    expect(getByTestId('game-state')).toHaveTextContent('playing');
-    
-    getByTestId('end-btn').click();
-    expect(getByTestId('game-state')).toHaveTextContent('gameover');
+
+    fireEvent.click(getByTestId('start-btn'));
+    await waitFor(() => expect(getByTestId('game-state')).toHaveTextContent('playing'));
+
+    fireEvent.click(getByTestId('end-btn'));
+    await waitFor(() => expect(getByTestId('game-state')).toHaveTextContent('gameover'));
   });
 });

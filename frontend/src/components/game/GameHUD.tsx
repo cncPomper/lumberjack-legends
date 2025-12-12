@@ -19,10 +19,13 @@ const GameHUD: React.FC = () => {
           <Trophy className="w-4 h-4" />
           <span>Score</span>
         </div>
-        <div className={cn(
-          "text-3xl font-heading font-bold text-gradient-gold",
-          gameState === 'playing' && "animate-score-pop"
-        )}>
+        <div
+          data-testid="hud-score"
+          className={cn(
+            "text-3xl font-heading font-bold text-gradient-gold",
+            gameState === 'playing' && "animate-score-pop"
+          )}
+        >
           {score}
         </div>
       </div>
@@ -44,10 +47,13 @@ const GameHUD: React.FC = () => {
             style={{ width: `${timePercentage}%` }}
           />
         </div>
-        <div className={cn(
-          "text-xl font-heading font-bold mt-1 text-center",
-          isLowTime ? "text-destructive" : "text-foreground"
-        )}>
+        <div
+          data-testid="hud-time"
+          className={cn(
+            "text-xl font-heading font-bold mt-1 text-center",
+            isLowTime ? "text-destructive" : "text-foreground"
+          )}
+        >
           {timeLeft.toFixed(1)}s
         </div>
       </div>
@@ -63,7 +69,7 @@ const GameHUD: React.FC = () => {
           <Axe className="w-4 h-4" />
           <span>Chops</span>
         </div>
-        <div className="text-2xl font-heading font-bold text-foreground">
+        <div data-testid="hud-chops" className="text-2xl font-heading font-bold text-foreground">
           {chops}
         </div>
       </div>
