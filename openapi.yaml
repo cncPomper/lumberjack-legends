@@ -1,0 +1,278 @@
+openapi: 3.1.0
+info:
+  title: Lumberjack Legends API
+  version: 0.1.0
+  description: Backend contract inferred from the frontend mock API.
+servers:
+  - url: https://api.example.com
+    description: Replace with actual host
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    User:
+      type: object
+      required: [id, username, email, createdAt, highScore, totalChops, gamesPlayed]
+      properties:
+        id: { type: string }
+        username: { type: string }
+        email: { type: string, format: email }
+        createdAt: { type: string, format: date-time }
+        highScore: { type: integer }
+        totalChops: { type: integer }
+        gamesPlayed: { type: integer }
+    AuthResponse:
+      type: object
+      required: [success]
+      properties:
+        success: { type: boolean }
+        user: { $ref: '#/components/schemas/User' }
+        token: { type: string }
+        error: { type: string }
+    LeaderboardEntry:
+      type: object
+      required: [id, username, score, chops, rank, timestamp]
+      properties:
+        id: { type: string }
+        username: { type: string }
+        score: { type: integer }
+        chops: { type: integer }
+        rank: { type: integer }
+        timestamp: { type: string, format: date-time }
+    LeaderboardResponse:
+      type: object
+      required: [success, entries]
+      properties:
+        success: { type: boolean }
+        entries:
+          type: array
+          items: { $ref: '#/components/schemas/LeaderboardEntry' }
+        userRank: { type: integer }
+        error: { type: string }
+    GameSession:
+      type: object
+      required: [id, userId, score, chops, duration, startedAt]
+      properties:
+        id: { type: string }
+        userId: { type: string }
+        score: { type: integer }
+        chops: { type: integer }
+        duration: { type: number, format: float }
+        startedAt: { type: string, format: date-time }
+        endedAt: { type: string, format: date-time }
+    GameSessionResponse:
+      type: object
+      required: [success]
+      properties:
+        success: { type: boolean }
+        session: { $ref: '#/components/schemas/GameSession' }
+        error: { type: string }
+paths:
+  /auth/login:
+    post:
+      summary: Login with email/password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string, minLength: 4 }
+      responses:
+        '200':
+          description: Login success
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthResponse' }
+        '400':
+          description: Validation or invalid credentials
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthResponse' }
+  /auth/signup:
+    post:
+      summary: Create a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, email, password]
+              properties:
+                username: { type: string, minLength: 3 }
+                email: { type: string, format: email }
+                password: { type: string, minLength: 6 }
+      responses:
+        '201':
+          description: User created and logged in
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthResponse' }
+        '400':
+          description: Validation or duplicate email/username
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthResponse' }
+  /auth/logout:
+    post:
+      summary: Logout current user
+      security: [ { bearerAuth: [] } ]
+      responses:
+        '200':
+          description: Logout success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+  /auth/me:
+    get:
+      summary: Get current authenticated user
+      security: [ { bearerAuth: [] } ]
+      responses:
+        '200':
+          description: Authenticated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthResponse' }
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthResponse' }
+  /auth/profile:
+    patch:
+      summary: Update current user profile
+      security: [ { bearerAuth: [] } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username: { type: string }
+                email: { type: string, format: email }
+                highScore: { type: integer }
+                totalChops: { type: integer }
+                gamesPlayed: { type: integer }
+      responses:
+        '200':
+          description: Updated user
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthResponse' }
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthResponse' }
+  /leaderboard:
+    get:
+      summary: Get leaderboard
+      parameters:
+        - in: query
+          name: limit
+          schema: { type: integer, minimum: 1, maximum: 100, default: 10 }
+      responses:
+        '200':
+          description: Leaderboard entries
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LeaderboardResponse' }
+    post:
+      summary: Submit a score (updates user stats and leaderboard)
+      security: [ { bearerAuth: [] } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [score, chops]
+              properties:
+                score: { type: integer }
+                chops: { type: integer }
+      responses:
+        '200':
+          description: Updated leaderboard
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LeaderboardResponse' }
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LeaderboardResponse' }
+  /game/session:
+    post:
+      summary: Start a game session
+      security: [ { bearerAuth: [] } ]
+      responses:
+        '201':
+          description: Session started
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GameSessionResponse' }
+  /game/session/{sessionId}/end:
+    post:
+      summary: End a game session and optionally update leaderboard
+      security: [ { bearerAuth: [] } ]
+      parameters:
+        - in: path
+          name: sessionId
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [score, chops, duration]
+              properties:
+                score: { type: integer }
+                chops: { type: integer }
+                duration: { type: number, format: float }
+      responses:
+        '200':
+          description: Session ended (and leaderboard updated if authenticated)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GameSessionResponse' }
+  /game/stats:
+    get:
+      summary: Get current user stats
+      security: [ { bearerAuth: [] } ]
+      responses:
+        '200':
+          description: Stats for authenticated user
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success]
+                properties:
+                  success: { type: boolean }
+                  stats:
+                    type: object
+                    properties:
+                      totalGames: { type: integer }
+                      avgScore: { type: integer }
+                      topScore: { type: integer }
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
