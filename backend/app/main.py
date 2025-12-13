@@ -1,7 +1,7 @@
-from fastapi import FastAPI, Depends, HTTPException, status, Query
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from fastapi.middleware.cors import CORSMiddleware
-import jwt
+from fastapi import FastAPI, Depends, HTTPException, status, Query # type: ignore
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials # type: ignore
+from fastapi.middleware.cors import CORSMiddleware # type: ignore
+import jwt # type: ignore
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 from .models import (
@@ -92,7 +92,7 @@ def get_me(current_user: dict = Depends(get_current_user)):
 def update_profile(request: ProfileUpdateRequest, current_user: dict = Depends(get_current_user)):
     updates = request.model_dump(exclude_unset=True)
     updated_user = db.update_user(current_user["id"], updates)
-    return AuthResponse(success=True, user=User(**updated_user))
+    return AuthResponse(success=True, user=User(**updated_user)) # type: ignore
 
 # Leaderboard Routes
 @app.get("/leaderboard", response_model=LeaderboardResponse)

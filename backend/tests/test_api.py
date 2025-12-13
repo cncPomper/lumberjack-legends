@@ -1,4 +1,4 @@
-from fastapi.testclient import TestClient
+from fastapi.testclient import TestClient # type: ignore
 from app.main import app
 from app.db import db, _initial_users
 
