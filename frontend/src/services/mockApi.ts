@@ -52,8 +52,8 @@ export interface GameSessionResponse {
 // Simulated delay for realistic API behavior
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Mock data storage (simulates database)
-let mockUsers: User[] = [
+// Original mock data (used for resetting)
+const _initialMockUsers: User[] = [
   { id: '1', username: 'ForestKing', email: 'king@forest.com', createdAt: new Date('2024-01-15'), highScore: 2500, totalChops: 15000, gamesPlayed: 120 },
   { id: '2', username: 'AxeMaster', email: 'axe@master.com', createdAt: new Date('2024-02-20'), highScore: 2200, totalChops: 12000, gamesPlayed: 95 },
   { id: '3', username: 'TimberWolf', email: 'timber@wolf.com', createdAt: new Date('2024-03-10'), highScore: 1950, totalChops: 9500, gamesPlayed: 78 },
@@ -66,8 +66,17 @@ let mockUsers: User[] = [
   { id: '10', username: 'Timberton', email: 'timber@ton.com', createdAt: new Date('2024-10-10'), highScore: 900, totalChops: 3200, gamesPlayed: 22 },
 ];
 
-let currentUser: User | null = null;
-let authToken: string | null = null;
+// Mock data storage (simulates database) - these will be reset by the function below
+export let mockUsers: User[] = JSON.parse(JSON.stringify(_initialMockUsers)); // Deep copy
+export let currentUser: User | null = null;
+export let authToken: string | null = null;
+
+// Function to reset the internal state of the mock API for tests
+export const __resetMockApiState = () => {
+  mockUsers = JSON.parse(JSON.stringify(_initialMockUsers));
+  currentUser = null;
+  authToken = null;
+};
 
 // Generate mock token
 const generateToken = () => Math.random().toString(36).substring(2) + Date.now().toString(36);
@@ -89,7 +98,7 @@ export const mockAuthApi = {
     }
     
     // In real app, we'd verify password hash
-    if (password.length < 4) {
+    if (password.length < 4) { // Simplified for mock
       return { success: false, error: 'Invalid email or password' };
     }
     
@@ -287,6 +296,7 @@ export const api = {
   auth: mockAuthApi,
   leaderboard: mockLeaderboardApi,
   game: mockGameApi,
+  __resetMockApiState, // Export the reset function
 };
 
 export default api;
