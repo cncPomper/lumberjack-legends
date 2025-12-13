@@ -1,5 +1,5 @@
-import pytest
-from fastapi.testclient import TestClient
+import pytest # type: ignore
+from fastapi.testclient import TestClient # type: ignore
 from app.main import app
 from app.db import db, _initial_users, _initial_sessions
 
