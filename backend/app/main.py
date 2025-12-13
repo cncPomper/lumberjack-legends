@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException, status, Query # type: ignore
+from fastapi import FastAPI, Depends, HTTPException, status, Query, APIRouter # type: ignore
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials # type: ignore
 from fastapi.middleware.cors import CORSMiddleware # type: ignore
 import jwt # type: ignore
@@ -14,7 +14,9 @@ from .db import db
 app = FastAPI(
     title="Lumberjack Legends API",
     version="0.1.0",
-    description="Backend for Lumberjack Legends"
+    description="Backend for Lumberjack Legends",
+    docs_url="/api/docs",
+    openapi_url="/api/openapi.json"
 )
 
 # CORS
@@ -56,8 +58,11 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
     return user
 
+# API Router
+router = APIRouter(prefix="/api")
+
 # Auth Routes
-@app.post("/auth/login", response_model=AuthResponse)
+@router.post("/auth/login", response_model=AuthResponse)
 def login(request: LoginRequest):
     user = db.get_user_by_email(request.email)
     if not user or user["password"] != request.password:
@@ -66,7 +71,7 @@ def login(request: LoginRequest):
     token = create_access_token(data={"sub": user["id"]})
     return AuthResponse(success=True, user=User(**user), token=token)
 
-@app.post("/auth/signup", response_model=AuthResponse, status_code=201)
+@router.post("/auth/signup", response_model=AuthResponse, status_code=201)
 def signup(request: SignupRequest):
     if db.get_user_by_email(request.email):
         return AuthResponse(success=False, error="Email already registered")
@@ -80,22 +85,22 @@ def signup(request: SignupRequest):
     token = create_access_token(data={"sub": new_user["id"]})
     return AuthResponse(success=True, user=User(**new_user), token=token)
 
-@app.post("/auth/logout")
+@router.post("/auth/logout")
 def logout(current_user: dict = Depends(get_current_user)):
     return {"success": True}
 
-@app.get("/auth/me", response_model=AuthResponse)
+@router.get("/auth/me", response_model=AuthResponse)
 def get_me(current_user: dict = Depends(get_current_user)):
     return AuthResponse(success=True, user=User(**current_user))
 
-@app.patch("/auth/profile", response_model=AuthResponse)
+@router.patch("/auth/profile", response_model=AuthResponse)
 def update_profile(request: ProfileUpdateRequest, current_user: dict = Depends(get_current_user)):
     updates = request.model_dump(exclude_unset=True)
     updated_user = db.update_user(current_user["id"], updates)
     return AuthResponse(success=True, user=User(**updated_user)) # type: ignore
 
 # Leaderboard Routes
-@app.get("/leaderboard", response_model=LeaderboardResponse)
+@router.get("/leaderboard", response_model=LeaderboardResponse)
 def get_leaderboard(limit: int = Query(10, ge=1, le=100)):
     entries_data = db.get_leaderboard(limit)
     entries = []
@@ -113,7 +118,7 @@ def get_leaderboard(limit: int = Query(10, ge=1, le=100)):
     # The spec says userRank is optional.
     return LeaderboardResponse(success=True, entries=entries)
 
-@app.post("/leaderboard", response_model=LeaderboardResponse)
+@router.post("/leaderboard", response_model=LeaderboardResponse)
 def submit_score(request: ScoreSubmitRequest, current_user: dict = Depends(get_current_user)):
     # Update user stats
     updates = {
@@ -129,12 +134,12 @@ def submit_score(request: ScoreSubmitRequest, current_user: dict = Depends(get_c
     return get_leaderboard(limit=10)
 
 # Game Routes
-@app.post("/game/session", response_model=GameSessionResponse, status_code=201)
+@router.post("/game/session", response_model=GameSessionResponse, status_code=201)
 def start_session(current_user: dict = Depends(get_current_user)):
     session = db.create_session(current_user["id"])
     return GameSessionResponse(success=True, session=session)
 
-@app.post("/game/session/{session_id}/end", response_model=GameSessionResponse)
+@router.post("/game/session/{session_id}/end", response_model=GameSessionResponse)
 def end_session(session_id: str, request: SessionEndRequest, current_user: dict = Depends(get_current_user)):
     session = db.end_session(session_id, request.score, request.chops, request.duration)
     if not session:
@@ -154,7 +159,7 @@ def end_session(session_id: str, request: SessionEndRequest, current_user: dict 
 
     return GameSessionResponse(success=True, session=session)
 
-@app.get("/game/stats")
+@router.get("/game/stats")
 def get_stats(current_user: dict = Depends(get_current_user)):
     return {
         "success": True,
@@ -164,3 +169,5 @@ def get_stats(current_user: dict = Depends(get_current_user)):
             "topScore": current_user["highScore"]
         }
     }
+
+app.include_router(router)
