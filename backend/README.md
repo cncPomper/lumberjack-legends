@@ -13,6 +13,16 @@ This is the backend API for the Lumberjack Legends game, built with FastAPI.
 
 This project uses `uv` for dependency management.
 
+### Quick Start (using Makefile)
+
+```bash
+make install    # Install dependencies
+make dev        # Run server with auto-reload
+make test       # Run tests
+```
+
+### Manual Setup
+
 1.  **Install dependencies**:
     ```bash
     uv sync
@@ -20,7 +30,7 @@ This project uses `uv` for dependency management.
 
 2.  **Run the server**:
     ```bash
-    uv run uvicorn app.main:app --reload
+    uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
     ```
 
 ## API Documentation

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { api, LeaderboardEntry } from '@/services/mockApi';
+import { api, LeaderboardEntry } from '@/services/api';
 import { Button } from '@/components/ui/button';
 import { Axe, Trophy, LogIn, LogOut, User, ChevronRight } from 'lucide-react';
 

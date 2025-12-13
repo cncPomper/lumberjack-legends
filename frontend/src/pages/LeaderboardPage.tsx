@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { api, LeaderboardEntry } from '@/services/mockApi';
+import { api, LeaderboardEntry } from '@/services/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Trophy, Medal, ArrowLeft, Crown, Axe, Loader2 } from 'lucide-react';

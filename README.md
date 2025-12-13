@@ -1,0 +1,116 @@
+# Lumberjack Legends
+
+A fast-paced lumberjack game with real-time leaderboards and user authentication.
+
+## Project Structure
+
+```
+lumberjack-legends/
+├── backend/          # FastAPI backend server
+├── frontend/         # React + Vite frontend
+└── openapi.yaml      # API specification
+```
+
+## Quick Start
+
+### 1. Start the Backend
+
+```bash
+cd backend
+uv sync
+uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+Backend will be available at http://127.0.0.1:8000
+- API Documentation: http://127.0.0.1:8000/api/docs
+
+### 2. Start the Frontend
+
+```bash
+cd frontend
+npm install  # or bun install
+npm run dev  # or bun run dev
+```
+
+Frontend will be available at http://localhost:8080
+
+## Features
+
+- **User Authentication**: JWT-based signup and login
+- **Game Sessions**: Secure game session management to prevent cheating
+- **Real-time Leaderboard**: Global rankings updated after each game
+- **Responsive Design**: Works on desktop and mobile
+- **25 Pre-populated Users**: Test accounts with various scores
+
+## Test Accounts
+
+All test accounts use the password: `password`
+
+- paul@legends.com - Top player (5000 points)
+- king@forest.com - High scorer (2500 points)
+- redwood@rookie.com - New player (50 points)
+
+See `backend/app/db.py` for the full list of test users.
+
+## API Endpoints
+
+All API endpoints are prefixed with `/api`:
+
+### Authentication
+- `POST /api/auth/signup` - Create new user
+- `POST /api/auth/login` - Login
+- `POST /api/auth/logout` - Logout
+- `GET /api/auth/me` - Get current user
+- `PATCH /api/auth/profile` - Update profile
+
+### Leaderboard
+- `GET /api/leaderboard` - Get top players
+- `POST /api/leaderboard` - Submit score
+
+### Game
+- `POST /api/game/session` - Start game session
+- `POST /api/game/session/{id}/end` - End game session
+- `GET /api/game/stats` - Get user stats
+
+## Development
+
+### Backend
+- Python 3.12+
+- FastAPI framework
+- uv for dependency management
+- In-memory mock database (for now)
+
+### Frontend
+- React 18
+- TypeScript
+- Vite for build tooling
+- Tailwind CSS for styling
+- shadcn-ui components
+
+## Testing
+
+### Backend Tests
+```bash
+cd backend
+uv run pytest
+```
+
+### Frontend Tests
+```bash
+cd frontend
+npm test  # or bun test
+```
+
+## Architecture
+
+The application follows a client-server architecture:
+
+1. **Frontend** makes HTTP requests to the backend API
+2. **Backend** handles authentication, game logic, and data persistence
+3. **OpenAPI spec** defines the contract between frontend and backend
+
+Authentication uses JWT tokens stored in localStorage on the frontend.
+
+## Contributing
+
+See `AGENTS.md` for guidelines on backend development.

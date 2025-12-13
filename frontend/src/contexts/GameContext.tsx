@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
-import { api } from '@/services/mockApi';
+import { api } from '@/services/api';
 import { useAuth } from './AuthContext';
 
 export type GameState = 'idle' | 'playing' | 'paused' | 'gameover';
@@ -60,6 +60,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const [isChopping, setIsChopping] = useState(false);
   const [timerRef, setTimerRef] = useState<NodeJS.Timeout | null>(null);
   const [segmentCounter, setSegmentCounter] = useState(TREE_HEIGHT);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [gameStartTime, setGameStartTime] = useState<number>(0);
 
   const endGame = useCallback(async () => {
     if (timerRef) {
@@ -68,13 +70,14 @@ export function GameProvider({ children }: { children: ReactNode }) {
     }
     setGameState('gameover');
     
-    // Submit score if user is logged in
-    if (user) {
-      await api.leaderboard.submitScore(score, chops);
+    // Submit score and end session if user is logged in
+    if (user && sessionId) {
+      const duration = (Date.now() - gameStartTime) / 1000; // Convert to seconds
+      await api.game.endSession(sessionId, score, chops, duration);
     }
-  }, [timerRef, user, score, chops]);
+  }, [timerRef, user, sessionId, score, chops, gameStartTime]);
 
-  const startGame = useCallback(() => {
+  const startGame = useCallback(async () => {
     setScore(0);
     setChops(0);
     setTimeLeft(INITIAL_TIME);
@@ -82,6 +85,15 @@ export function GameProvider({ children }: { children: ReactNode }) {
     setTreeSegments(generateTree());
     setSegmentCounter(TREE_HEIGHT);
     setGameState('playing');
+    setGameStartTime(Date.now());
+
+    // Start a game session if user is logged in
+    if (user) {
+      const sessionResponse = await api.game.startSession();
+      if (sessionResponse.success && sessionResponse.session) {
+        setSessionId(sessionResponse.session.id);
+      }
+    }
 
     // Start timer
     const timer = setInterval(() => {
@@ -94,7 +106,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     }, 100);
     
     setTimerRef(timer);
-  }, []);
+  }, [user]);
 
   // Check for game over when time runs out
   React.useEffect(() => {

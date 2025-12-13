@@ -1,99 +1,75 @@
 # Lumberjack Legends Frontend
 
-Welcome to the frontend application for Lumberjack Legends! This project is built with Vite, TypeScript, React, shadcn-ui, and Tailwind CSS.
+This is the frontend application for Lumberjack Legends, built with React, TypeScript, Vite, and Tailwind CSS.
 
-## Project Setup
+## Features
 
-### Prerequisites
+- **Authentication**: User signup, login, and session management
+- **Game Play**: Interactive lumberjack chopping game with scoring
+- **Leaderboard**: Real-time leaderboard with rankings
+- **Responsive Design**: Works on desktop and mobile devices
 
-*   Node.js (LTS version recommended)
-*   npm (comes with Node.js) or Bun
+## Setup
 
-### Installation
+This project uses npm or bun for dependency management.
 
-Navigate to the `frontend` directory and install dependencies:
+1. **Install dependencies**:
+   ```bash
+   npm install
+   # or
+   bun install
+   ```
+
+2. **Configure backend URL** (optional):
+   The `.env` file is already configured with:
+   ```
+   VITE_API_BASE_URL=http://127.0.0.1:8000/api
+   ```
+
+3. **Start the development server**:
+   ```bash
+   npm run dev
+   # or
+   bun run dev
+   ```
+
+The app will be available at http://localhost:8080
+
+## Backend Integration
+
+The frontend connects to the FastAPI backend. Make sure the backend is running before starting the frontend:
 
 ```bash
-cd /workspaces/lumberjack-legends/frontend
-npm install
-# or if you use Bun
-# bun install
+# In the backend directory
+cd ../backend
+uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-## Running the Application
+The API endpoints are prefixed with `/api`:
+- Authentication: `/api/auth/*`
+- Leaderboard: `/api/leaderboard`
+- Game Sessions: `/api/game/*`
 
-To start the development server:
+## Testing
+
+Run the test suite using Vitest:
 
 ```bash
-cd /workspaces/lumberjack-legends/frontend
-npm run dev
-# or if you use Bun
-# bun dev
+npm test
+# or
+bun test
 ```
 
-This will usually open the application in your browser at `http://localhost:8080`.
+## Project Structure
 
-## Running Tests
+- `src/components/` - React components
+- `src/contexts/` - React context providers (Auth, Game)
+- `src/pages/` - Page components
+- `src/services/` - API service layer
+  - `api.ts` - Real backend API integration
+  - `mockApi.ts` - Mock API for testing
+- `src/lib/` - Utility functions
 
-This project uses [Vitest](https://vitest.dev/) for testing.
+## Environment Variables
 
-### Test Scripts
-
-The `package.json` includes the following test scripts for convenience:
-
-*   `npm run test`: Runs tests in watch mode (interactive).
-*   `npm run test:run`: Runs all tests once and exits.
-
-### How to Run Tests
-
-1.  **Ensure Dependencies are Installed**:
-    ```bash
-    cd /workspaces/lumberjack-legends/frontend
-    npm install # or bun install
-    ```
-
-2.  **Run All Tests (once)**:
-    ```bash
-    cd /workspaces/lumberjack-legends/frontend
-    npm run test:run
-    # or using npx/bun directly if script not added:
-    # npx vitest --run
-    # bun vitest --run
-    ```
-
-3.  **Run Tests in Watch Mode (interactive)**:
-    ```bash
-    cd /workspaces/lumberjack-legends/frontend
-    npm run test
-    # or using npx/bun directly if script not added:
-    # npx vitest
-    # bun vitest
-    ```
-
-4.  **Run a Specific Test File**:
-    Replace `<path/to/your/test.ts>` with the actual path to the test file.
-    ```bash
-    cd /workspaces/lumberjack-legends/frontend
-    npm exec vitest -- src/services/mockApi.integration.test.ts --run
-    # Example for a specific component test:
-    # npm exec vitest -- src/components/game/GameHUD.test.tsx --run
-    ```
-
-### Test Environment
-
-Tests are configured to run in a `jsdom` environment, which simulates a browser DOM for React component testing.
-The `setupTests.ts` file is used for global test setup, e.g., extending `expect` with `@testing-library/jest-dom` matchers.
-
----
-
-## What technologies are used for this project?
-
--   **Vite**: Fast frontend tooling, development server, and build tool.
--   **TypeScript**: Statically typed superset of JavaScript.
--   **React**: A JavaScript library for building user interfaces.
--   **shadcn-ui**: A collection of re-usable components for React.
--   **Tailwind CSS**: A utility-first CSS framework for rapidly building custom designs.
-
-## Additional Information
-
-For more details on deploying this project or connecting a custom domain, refer to the original project documentation if available.
+- `VITE_API_BASE_URL` - Backend API base URL (default: `http://127.0.0.1:8000/api`)
