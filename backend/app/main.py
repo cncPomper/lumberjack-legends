@@ -12,6 +12,7 @@ from .models import (
 )
 from .db import database
 from .database import get_db, init_db
+from .auth_utils import hash_password, verify_password
 
 app = FastAPI(
     title="Lumberjack Legends API",
@@ -75,7 +76,7 @@ router = APIRouter(prefix="/api")
 @router.post("/auth/login", response_model=AuthResponse)
 def login(request: LoginRequest, db: Session = Depends(get_db)):
     user = database.get_user_by_email(db, request.email)
-    if not user or user["password"] != request.password:
+    if not user or not verify_password(request.password, user["password"]):
         return AuthResponse(success=False, error="Invalid email or password")
     
     token = create_access_token(data={"sub": user["id"]})
@@ -90,7 +91,11 @@ def signup(request: SignupRequest, db: Session = Depends(get_db)):
     if database.get_user_by_username(db, request.username):
         return AuthResponse(success=False, error="Username already taken")
 
-    new_user = database.create_user(db, request.model_dump())
+    # Hash the password before storing
+    user_data = request.model_dump()
+    user_data["password"] = hash_password(user_data["password"])
+    
+    new_user = database.create_user(db, user_data)
     token = create_access_token(data={"sub": new_user["id"]})
     return AuthResponse(success=True, user=User(**new_user), token=token)
 

@@ -6,6 +6,7 @@ from sqlalchemy.pool import StaticPool
 from app.main import app
 from app.database import Base, get_db
 from app import db_models
+from app.auth_utils import hash_password
 from datetime import datetime, timezone
 
 # Create test database engine (in-memory SQLite with special config for testing)
@@ -53,11 +54,12 @@ def client():
 
 def seed_test_data(db):
     """Seed database with test data"""
+    hashed_pw = hash_password("password")  # Hash once for all test users
     test_users = [
-        {"id": "1", "username": "ForestKing", "email": "king@forest.com", "password": "password", "created_at": datetime(2024, 1, 15, tzinfo=timezone.utc), "high_score": 2500, "total_chops": 15000, "games_played": 120},
-        {"id": "2", "username": "AxeMaster", "email": "axe@master.com", "password": "password", "created_at": datetime(2024, 2, 20, tzinfo=timezone.utc), "high_score": 2200, "total_chops": 12000, "games_played": 95},
-        {"id": "4", "username": "PaulBunyan", "email": "paul@legends.com", "password": "password", "created_at": datetime(2024, 1, 1, tzinfo=timezone.utc), "high_score": 5000, "total_chops": 50000, "games_played": 500},
-        {"id": "24", "username": "RedwoodRookie", "email": "redwood@rookie.com", "password": "password", "created_at": datetime(2024, 8, 10, tzinfo=timezone.utc), "high_score": 50, "total_chops": 10, "games_played": 1},
+        {"id": "1", "username": "ForestKing", "email": "king@forest.com", "password": hashed_pw, "created_at": datetime(2024, 1, 15, tzinfo=timezone.utc), "high_score": 2500, "total_chops": 15000, "games_played": 120},
+        {"id": "2", "username": "AxeMaster", "email": "axe@master.com", "password": hashed_pw, "created_at": datetime(2024, 2, 20, tzinfo=timezone.utc), "high_score": 2200, "total_chops": 12000, "games_played": 95},
+        {"id": "4", "username": "PaulBunyan", "email": "paul@legends.com", "password": hashed_pw, "created_at": datetime(2024, 1, 1, tzinfo=timezone.utc), "high_score": 5000, "total_chops": 50000, "games_played": 500},
+        {"id": "24", "username": "RedwoodRookie", "email": "redwood@rookie.com", "password": hashed_pw, "created_at": datetime(2024, 8, 10, tzinfo=timezone.utc), "high_score": 50, "total_chops": 10, "games_played": 1},
     ]
     
     for user_data in test_users:
