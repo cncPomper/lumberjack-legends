@@ -4,12 +4,14 @@ from fastapi.middleware.cors import CORSMiddleware # type: ignore
 import jwt # type: ignore
 from datetime import datetime, timedelta, timezone
 from typing import Optional
+from sqlalchemy.orm import Session # type: ignore
 from .models import (
     User, AuthResponse, LoginRequest, SignupRequest, ProfileUpdateRequest,
     LeaderboardResponse, LeaderboardEntry, ScoreSubmitRequest,
     GameSessionResponse, SessionEndRequest
 )
-from .db import db
+from .db import database
+from .database import get_db, init_db
 
 app = FastAPI(
     title="Lumberjack Legends API",
@@ -28,6 +30,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Initialize database on startup
+@app.on_event("startup")
+def startup_event():
+    init_db()
+
 # Security
 security = HTTPBearer()
 SECRET_KEY = "supersecretkey"
@@ -43,7 +50,10 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
-def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+def get_current_user(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: Session = Depends(get_db)
+):
     token = credentials.credentials
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
@@ -53,7 +63,7 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
     except jwt.PyJWTError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
     
-    user = db.get_user_by_id(user_id)
+    user = database.get_user_by_id(db, user_id)
     if user is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
     return user
@@ -63,8 +73,8 @@ router = APIRouter(prefix="/api")
 
 # Auth Routes
 @router.post("/auth/login", response_model=AuthResponse)
-def login(request: LoginRequest):
-    user = db.get_user_by_email(request.email)
+def login(request: LoginRequest, db: Session = Depends(get_db)):
+    user = database.get_user_by_email(db, request.email)
     if not user or user["password"] != request.password:
         return AuthResponse(success=False, error="Invalid email or password")
     
@@ -72,16 +82,15 @@ def login(request: LoginRequest):
     return AuthResponse(success=True, user=User(**user), token=token)
 
 @router.post("/auth/signup", response_model=AuthResponse, status_code=201)
-def signup(request: SignupRequest):
-    if db.get_user_by_email(request.email):
+def signup(request: SignupRequest, db: Session = Depends(get_db)):
+    if database.get_user_by_email(db, request.email):
         return AuthResponse(success=False, error="Email already registered")
     
-    # Check username uniqueness (simple check)
-    for u in db.users:
-        if u["username"].lower() == request.username.lower():
-             return AuthResponse(success=False, error="Username already taken")
+    # Check username uniqueness
+    if database.get_user_by_username(db, request.username):
+        return AuthResponse(success=False, error="Username already taken")
 
-    new_user = db.create_user(request.model_dump())
+    new_user = database.create_user(db, request.model_dump())
     token = create_access_token(data={"sub": new_user["id"]})
     return AuthResponse(success=True, user=User(**new_user), token=token)
 
@@ -94,15 +103,19 @@ def get_me(current_user: dict = Depends(get_current_user)):
     return AuthResponse(success=True, user=User(**current_user))
 
 @router.patch("/auth/profile", response_model=AuthResponse)
-def update_profile(request: ProfileUpdateRequest, current_user: dict = Depends(get_current_user)):
+def update_profile(
+    request: ProfileUpdateRequest,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
     updates = request.model_dump(exclude_unset=True)
-    updated_user = db.update_user(current_user["id"], updates)
+    updated_user = database.update_user(db, current_user["id"], updates)
     return AuthResponse(success=True, user=User(**updated_user)) # type: ignore
 
 # Leaderboard Routes
 @router.get("/leaderboard", response_model=LeaderboardResponse)
-def get_leaderboard(limit: int = Query(10, ge=1, le=100)):
-    entries_data = db.get_leaderboard(limit)
+def get_leaderboard(limit: int = Query(10, ge=1, le=100), db: Session = Depends(get_db)):
+    entries_data = database.get_leaderboard(db, limit)
     entries = []
     for i, entry in enumerate(entries_data):
         entries.append(LeaderboardEntry(
@@ -119,7 +132,11 @@ def get_leaderboard(limit: int = Query(10, ge=1, le=100)):
     return LeaderboardResponse(success=True, entries=entries)
 
 @router.post("/leaderboard", response_model=LeaderboardResponse)
-def submit_score(request: ScoreSubmitRequest, current_user: dict = Depends(get_current_user)):
+def submit_score(
+    request: ScoreSubmitRequest,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
     # Update user stats
     updates = {
         "totalChops": current_user["totalChops"] + request.chops,
@@ -128,34 +145,30 @@ def submit_score(request: ScoreSubmitRequest, current_user: dict = Depends(get_c
     if request.score > current_user["highScore"]:
         updates["highScore"] = request.score
     
-    db.update_user(current_user["id"], updates)
+    database.update_user(db, current_user["id"], updates)
     
     # Return updated leaderboard
-    return get_leaderboard(limit=10)
+    return get_leaderboard(limit=10, db=db)
 
 # Game Routes
 @router.post("/game/session", response_model=GameSessionResponse, status_code=201)
-def start_session(current_user: dict = Depends(get_current_user)):
-    session = db.create_session(current_user["id"])
+def start_session(
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    session = database.create_session(db, current_user["id"])
     return GameSessionResponse(success=True, session=session)
 
 @router.post("/game/session/{session_id}/end", response_model=GameSessionResponse)
-def end_session(session_id: str, request: SessionEndRequest, current_user: dict = Depends(get_current_user)):
-    session = db.end_session(session_id, request.score, request.chops, request.duration)
+def end_session(
+    session_id: str,
+    request: SessionEndRequest,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    session = database.end_session(db, session_id, request.score, request.chops, request.duration)
     if not session:
         return GameSessionResponse(success=False, error="Session not found")
-    
-    # Also update leaderboard/stats
-    # Re-using logic from submit_score or calling it?
-    # The spec says "End a game session and optionally update leaderboard"
-    # Let's update it here too.
-    updates = {
-        "totalChops": current_user["totalChops"] + request.chops,
-        "gamesPlayed": current_user["gamesPlayed"] + 1
-    }
-    if request.score > current_user["highScore"]:
-        updates["highScore"] = request.score
-    db.update_user(current_user["id"], updates)
 
     return GameSessionResponse(success=True, session=session)
 

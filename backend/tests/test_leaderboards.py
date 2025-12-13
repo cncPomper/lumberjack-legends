@@ -4,8 +4,8 @@ def test_read_main(client):
     data = response.json()
     assert data["success"] == True
     assert isinstance(data["entries"], list)
-    # We added 10 users in total, so we expect 10 entries (default limit is 10)
-    assert len(data["entries"]) == 10
+    # We seeded 4 test users
+    assert len(data["entries"]) == 4
     # Verify the top user is PaulBunyan (score 5000)
     assert data["entries"][0]["username"] == "PaulBunyan"
     assert data["entries"][0]["score"] == 5000
