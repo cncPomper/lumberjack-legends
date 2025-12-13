@@ -13,26 +13,35 @@ lumberjack-legends/
 
 ## Quick Start
 
-### 1. Start the Backend
+### Run Both Frontend and Backend (Recommended)
+
+```bash
+npm install      # Install concurrently (first time only)
+npm run dev      # Start both backend and frontend
+```
+
+This will start:
+- **Backend** at http://127.0.0.1:8000 (API docs: http://127.0.0.1:8000/api/docs)
+- **Frontend** at http://localhost:8080
+
+### Or Run Separately
+
+#### 1. Start the Backend
 
 ```bash
 cd backend
-uv sync
+make dev        # Using Makefile
+# OR
 uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-Backend will be available at http://127.0.0.1:8000
-- API Documentation: http://127.0.0.1:8000/api/docs
-
-### 2. Start the Frontend
+#### 2. Start the Frontend
 
 ```bash
 cd frontend
-npm install  # or bun install
+npm install  # or bun install (first time only)
 npm run dev  # or bun run dev
 ```
-
-Frontend will be available at http://localhost:8080
 
 ## Features
 
