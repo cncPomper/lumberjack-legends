@@ -3,14 +3,14 @@ databases:
   - name: lumberjack-db
     databaseName: lumberjack_legends
     user: lumberjack
-    plan: starter
+    plan: free
 
 services:
   # Combined App (Frontend + Backend)
   - type: web
     name: lumberjack-app
     env: docker
-    plan: starter
+    plan: free
     dockerfilePath: ./Dockerfile
     healthCheckPath: /api/health
     envVars:

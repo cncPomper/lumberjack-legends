@@ -32,8 +32,9 @@ This method uses the `render.yaml` file for automatic setup.
 
 4. **Review and Deploy**
    - Render will read `render.yaml` and show you what will be created:
-     - PostgreSQL Database (Starter plan - $7/month)
-     - Web Service (Starter plan - $7/month)
+     - PostgreSQL Database (Free plan - expires after 90 days)
+     - Web Service (Free plan - spins down after 15 min inactivity)
+   - You can upgrade plans later if needed
    - Click **"Apply"** to create services
 
 5. **Wait for Deployment**
@@ -64,7 +65,7 @@ If you prefer manual configuration:
    - Name: `lumberjack-db`
    - Database: `lumberjack_legends`
    - User: `lumberjack`
-   - Plan: Starter ($7/month) or Free (slower, limited)
+   - Plan: Free (expires after 90 days) or Standard ($7/month)
 3. Click **"Create Database"**
 4. Note the **Internal Database URL** (starts with `postgresql://`)
 
@@ -77,7 +78,7 @@ If you prefer manual configuration:
    - Environment: **Docker**
    - Branch: `main`
    - Dockerfile Path: `./Dockerfile`
-   - Plan: Starter ($7/month) or Free (slower, spins down)
+   - Plan: Free (spins down after 15 min) or Standard ($7/month)
 4. Add Environment Variables:
    - `DATABASE_URL`: Paste the Internal Database URL from step 1
    - `SECRET_KEY`: Generate with: `openssl rand -hex 32`
@@ -170,9 +171,10 @@ Check the logs for errors. Common issues:
 
 ### Slow Response Times (Free Tier)
 
-Free tier services spin down after inactivity:
-- Upgrade to Starter plan ($7/month) for always-on
-- Or accept 30-60s cold start delay
+Free tier services spin down after 15 minutes of inactivity:
+- First request after spin-down takes 30-60 seconds
+- Upgrade to Standard plan ($7/month) for always-on service
+- Or accept cold start delays on free tier
 
 ## Updating Your App
 
@@ -189,19 +191,19 @@ Render automatically detects the push and redeploys (~5 min).
 ## Costs
 
 ### Free Tier
-- Web Service: Free (spins down after 15 min inactivity)
-- PostgreSQL: Free (90 days, then $7/month)
-- **Total**: $0 (temporary) → $7/month after 90 days
+- Web Service: Free (spins down after 15 min inactivity, 750 hrs/month)
+- PostgreSQL: Free (expires after 90 days, 1GB storage)
+- **Total**: $0 (database expires after 90 days)
 
-### Starter Plan (Recommended)
-- Web Service: $7/month (always on)
+### Standard Plan (Recommended)
+- Web Service: $7/month (always on, 0.5 CPU, 512 MB RAM)
 - PostgreSQL: $7/month (1GB storage, 97 connections)
 - **Total**: $14/month
 
 ### Pro Plan (Scale up later)
-- Web Service: $25/month (more CPU/RAM)
-- PostgreSQL: $20/month (10GB storage, better performance)
-- **Total**: $45/month
+- Web Service: $19+/month (more CPU/RAM options)
+- PostgreSQL: $20+/month (10GB+ storage, better performance)
+- **Total**: $39+/month
 
 ## Backup Database
 
