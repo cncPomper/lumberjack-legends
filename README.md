@@ -14,7 +14,20 @@ lumberjack-legends/
 
 ## Quick Start
 
-### Option 1: Production Deployment (Single Container)
+### Option 1: Deploy to Cloud (Render) ☁️
+
+Deploy to Render with one-click:
+
+```bash
+./render-preflight.sh  # Check readiness
+# Then go to dashboard.render.com and deploy via Blueprint
+```
+
+See [DEPLOY_RENDER.md](DEPLOY_RENDER.md) for complete cloud deployment guide.
+
+**Cost**: Free tier available, or $14/month for production.
+
+### Option 2: Self-Hosted Production (Docker)
 
 Deploy both frontend and backend in a single container with PostgreSQL database:
 
@@ -28,7 +41,7 @@ cp .env.production.example .env
 docker-compose -f docker-compose.prod.yml up -d --build
 ```
 
-See [DEPLOYMENT.md](DEPLOYMENT.md) for complete production deployment guide.
+See [DEPLOYMENT.md](DEPLOYMENT.md) for complete self-hosted deployment guide.
 
 ### Option 2: Development with Docker
 

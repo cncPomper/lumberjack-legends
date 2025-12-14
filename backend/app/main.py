@@ -73,6 +73,11 @@ def get_current_user(
 # API Router
 router = APIRouter(prefix="/api")
 
+# Health check endpoint (for Render and other monitoring)
+@router.get("/health")
+def health_check():
+    return {"status": "ok", "service": "lumberjack-legends"}
+
 # Auth Routes
 @router.post("/auth/login", response_model=AuthResponse)
 def login(request: LoginRequest, db: Session = Depends(get_db)):

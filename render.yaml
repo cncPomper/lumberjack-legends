@@ -1,0 +1,24 @@
+databases:
+  # PostgreSQL Database (Managed by Render)
+  - name: lumberjack-db
+    databaseName: lumberjack_legends
+    user: lumberjack
+    plan: starter
+
+services:
+  # Combined App (Frontend + Backend)
+  - type: web
+    name: lumberjack-app
+    env: docker
+    plan: starter
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: lumberjack-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: PORT
+        value: 80
