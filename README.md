@@ -93,6 +93,7 @@ npm run dev  # or bun run dev
 - **Game Sessions**: Secure game session management to prevent cheating
 - **Real-time Leaderboard**: Global rankings updated after each game
 - **Responsive Design**: Works on desktop and mobile
+- **Python Code Execution**: Run Python code in the browser using Pyodide (WASM)
 - **25 Pre-populated Users**: Test accounts with various scores
 
 ## Test Accounts

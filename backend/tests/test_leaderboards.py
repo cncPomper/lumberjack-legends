@@ -1,3 +1,11 @@
+def test_health_endpoint(client):
+    """Test the health check endpoint for monitoring"""
+    response = client.get("/api/health")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "ok"
+    assert data["service"] == "lumberjack-legends"
+
 def test_read_main(client):
     response = client.get("/api/leaderboard")
     assert response.status_code == 200
