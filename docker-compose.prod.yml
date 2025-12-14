@@ -1,23 +1,50 @@
-# Production Docker Compose Override
-# Usage: docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+# Production Docker Compose with Combined Container
+# Usage: docker-compose -f docker-compose.prod.yml up -d
 
 version: '3.8'
 
 services:
+  # PostgreSQL Database
   postgres:
+    image: postgres:16-alpine
+    container_name: lumberjack-db-prod
     restart: always
     environment:
+      POSTGRES_USER: ${POSTGRES_USER:-lumberjack}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    ports: []  # Don't expose PostgreSQL externally in production
+      POSTGRES_DB: ${POSTGRES_DB:-lumberjack_legends}
+    volumes:
+      - postgres_data_prod:/var/lib/postgresql/data
+    networks:
+      - lumberjack-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-lumberjack}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  backend:
+  # Combined App (Frontend + Backend in one container)
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: lumberjack-app-prod
     restart: always
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-lumberjack}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-lumberjack_legends}
       SECRET_KEY: ${SECRET_KEY}
-    ports: []  # Don't expose backend directly in production
-    volumes: []  # No volume mounts in production
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "80:80"
+    networks:
+      - lumberjack-network
 
-  frontend:
-    restart: always
+volumes:
+  postgres_data_prod:
+    driver: local
+
+networks:
+  lumberjack-network:
+    driver: bridge

@@ -14,9 +14,25 @@ lumberjack-legends/
 
 ## Quick Start
 
-### Option 1: Docker (Recommended for Production)
+### Option 1: Production Deployment (Single Container)
 
-See [DOCKER.md](DOCKER.md) for detailed Docker setup instructions.
+Deploy both frontend and backend in a single container with PostgreSQL database:
+
+```bash
+# Quick test
+./test-deployment.sh
+
+# Or manually
+cp .env.production.example .env
+# Edit .env with your production values
+docker-compose -f docker-compose.prod.yml up -d --build
+```
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for complete production deployment guide.
+
+### Option 2: Development with Docker
+
+Run frontend and backend as separate containers (with hot-reload):
 
 ```bash
 docker-compose up -d
@@ -24,7 +40,9 @@ docker-compose up -d
 
 Access the app at http://localhost
 
-### Option 2: Local Development
+See [DOCKER.md](DOCKER.md) for detailed Docker development setup.
+
+### Option 3: Local Development
 
 ### Run Both Frontend and Backend (Recommended)
 
