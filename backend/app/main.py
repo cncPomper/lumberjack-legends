@@ -2,6 +2,7 @@ from fastapi import FastAPI, Depends, HTTPException, status, Query, APIRouter # 
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials # type: ignore
 from fastapi.middleware.cors import CORSMiddleware # type: ignore
 import jwt # type: ignore
+import os
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 from sqlalchemy.orm import Session # type: ignore
@@ -38,7 +39,7 @@ def startup_event():
 
 # Security
 security = HTTPBearer()
-SECRET_KEY = "supersecretkey"
+SECRET_KEY = os.getenv("SECRET_KEY", "supersecretkey")
 ALGORITHM = "HS256"
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):

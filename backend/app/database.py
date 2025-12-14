@@ -4,18 +4,14 @@ from sqlalchemy import create_engine # type: ignore
 from sqlalchemy.ext.declarative import declarative_base # type: ignore
 from sqlalchemy.orm import sessionmaker # type: ignore
 
-# Get database URL from environment variable or default to SQLite
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./lumberjack.db")
+# Get database URL from environment variable or default to PostgreSQL
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://lumberjack:lumberjack_password@localhost:5432/lumberjack_legends")
 
 # Create engine
-# For SQLite, we need to enable foreign keys and set check_same_thread to False
-connect_args = {}
-if DATABASE_URL.startswith("sqlite"):
-    connect_args = {"check_same_thread": False}
-
+# PostgreSQL doesn't need special connect_args like SQLite
 engine = create_engine(
     DATABASE_URL,
-    connect_args=connect_args,
+    pool_pre_ping=True,  # Enable connection health checks
     echo=False  # Set to True for SQL query logging
 )
 

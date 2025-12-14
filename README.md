@@ -8,10 +8,23 @@ A fast-paced lumberjack game with real-time leaderboards and user authentication
 lumberjack-legends/
 ├── backend/          # FastAPI backend server
 ├── frontend/         # React + Vite frontend
+├── docker-compose.yml # Docker setup
 └── openapi.yaml      # API specification
 ```
 
 ## Quick Start
+
+### Option 1: Docker (Recommended for Production)
+
+See [DOCKER.md](DOCKER.md) for detailed Docker setup instructions.
+
+```bash
+docker-compose up -d
+```
+
+Access the app at http://localhost
+
+### Option 2: Local Development
 
 ### Run Both Frontend and Backend (Recommended)
 

@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: lumberjack-db
+    environment:
+      POSTGRES_USER: lumberjack
+      POSTGRES_PASSWORD: lumberjack_password
+      POSTGRES_DB: lumberjack_legends
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lumberjack"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - lumberjack-network
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: lumberjack-backend
+    environment:
+      DATABASE_URL: postgresql://lumberjack:lumberjack_password@postgres:5432/lumberjack_legends
+      SECRET_KEY: ${SECRET_KEY:-supersecretkey_change_in_production}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    networks:
+      - lumberjack-network
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # Frontend with Nginx
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: lumberjack-frontend
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+    networks:
+      - lumberjack-network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  lumberjack-network:
+    driver: bridge
