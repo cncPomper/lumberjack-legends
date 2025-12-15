@@ -12,42 +12,23 @@ The CI/CD pipeline consists of three jobs:
 
 ## Setup Instructions
 
-### 1. Get Render API Key
+### 1. Get Render Deploy Hook URL
 
 1. Log in to [Render Dashboard](https://dashboard.render.com)
-2. Go to **Account Settings** → **API Keys**
-3. Click **Create API Key**
-4. Give it a name (e.g., "GitHub Actions")
-5. Copy the API key (you won't be able to see it again)
+2. Navigate to your `lumberjack-app` web service
+3. Click on **Settings** in the left sidebar
+4. Scroll down to the **Deploy Hook** section
+5. Copy the Deploy Hook URL (it looks like: `https://api.render.com/deploy/srv-xxxxx?key=yyyyy`)
 
-### 2. Get Render Service ID
-
-1. Go to your Render dashboard
-2. Click on your `lumberjack-app` web service
-3. Look at the URL - it will be something like:
-   ```
-   https://dashboard.render.com/web/srv-XXXXXXXXXXXXX
-   ```
-4. The service ID is the part after `/web/` (e.g., `srv-XXXXXXXXXXXXX`)
-
-Alternatively, you can use the Render API:
-```bash
-curl -H "Authorization: Bearer YOUR_API_KEY" \
-  https://api.render.com/v1/services
-```
-
-### 3. Add GitHub Secrets
+### 2. Add GitHub Secret
 
 1. Go to your GitHub repository
 2. Navigate to **Settings** → **Secrets and variables** → **Actions**
 3. Click **New repository secret**
-4. Add the following secrets:
+4. Add the following secret:
 
-   - **Name:** `RENDER_API_KEY`
-     - **Value:** Your Render API key from step 1
-
-   - **Name:** `RENDER_SERVICE_ID`
-     - **Value:** Your Render service ID from step 2
+   - **Name:** `RENDER_DEPLOY_HOOK_URL`
+     - **Value:** The deploy hook URL from step 1
 
 ### 4. Test the Pipeline
 
@@ -105,8 +86,8 @@ curl -H "Authorization: Bearer YOUR_API_KEY" \
 - Ensure tests passed first
 
 ### Deployment API call fails
-- Verify `RENDER_API_KEY` is correct
-- Verify `RENDER_SERVICE_ID` is correct
+- Verify `RENDER_DEPLOY_HOOK_URL` is correct and complete
+- Make sure the URL includes the service ID and key parameter
 - Check Render API status
 
 ## Manual Deployment
@@ -114,10 +95,7 @@ curl -H "Authorization: Bearer YOUR_API_KEY" \
 If you need to deploy manually without waiting for CI/CD:
 
 ```bash
-curl -X POST "https://api.render.com/v1/services/YOUR_SERVICE_ID/deploys" \
-  -H "Authorization: Bearer YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"clearCache": false}'
+curl -X POST "YOUR_RENDER_DEPLOY_HOOK_URL"
 ```
 
 Or use the Render Dashboard:

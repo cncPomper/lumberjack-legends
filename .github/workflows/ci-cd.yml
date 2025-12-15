@@ -79,20 +79,52 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Deploy to Render
+      - name: Verify deploy hook is set
         env:
-          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
-          RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
         run: |
-          curl -X POST "https://api.render.com/v1/services/${RENDER_SERVICE_ID}/deploys" \
-            -H "Authorization: Bearer ${RENDER_API_KEY}" \
-            -H "Content-Type: application/json" \
-            -d '{"clearCache": false}'
+          if [ -z "$RENDER_DEPLOY_HOOK_URL" ]; then
+            echo "❌ ERROR: RENDER_DEPLOY_HOOK_URL secret is not set"
+            echo "Please add it in: Settings > Secrets and variables > Actions"
+            echo ""
+            echo "To get your deploy hook URL:"
+            echo "1. Go to your Render service dashboard"
+            echo "2. Click Settings"
+            echo "3. Scroll to 'Deploy Hook'"
+            echo "4. Copy the URL"
+            exit 1
+          fi
+          echo "✅ Deploy hook is configured"
       
-      - name: Deployment notification
+      - name: Trigger Render Deployment
+        env:
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
         run: |
-          echo "✅ Deployment triggered successfully!"
-          echo "Check status at: https://dashboard.render.com"
+          echo "🚀 Triggering deployment via deploy hook..."
+          
+          response=$(curl -X POST "$RENDER_DEPLOY_HOOK_URL" \
+            -w "\n%{http_code}" \
+            -s)
+          
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
+          
+          echo "Response code: $http_code"
+          echo "Response body: $body"
+          
+          if [ "$http_code" -eq 200 ] || [ "$http_code" -eq 201 ]; then
+            echo "✅ Deployment triggered successfully!"
+          else
+            echo "❌ Deployment failed with code: $http_code"
+            echo "Response: $body"
+            exit 1
+          fi
+      
+      - name: Deployment Summary
+        if: success()
+        run: |
+          echo "### 🎉 Deployment Triggered" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Tests passed and deployment has been triggered on Render" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Monitor progress at: https://dashboard.render.com" >> $GITHUB_STEP_SUMMARY
